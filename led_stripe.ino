@@ -1,6 +1,6 @@
 #include <Encoder.h>
-#include <TM1638lite.h>
 #include <WS2812FX.h>
+#include "LedPrint.h"
 
 
 #define LED_COUNT 288
@@ -8,9 +8,17 @@
 
 #define TIMER_MS 60000
 
+LedPrint myLed = LedPrint
+      (
+        4, // DATA PIN
+        8, // CLOCK PIN
+        7, // CS PIN
+        8,  // NUMBER OF DIGITS
+        1   // Orientation 0/1, if it looks backwards try the other
+      );
+    
 WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 Encoder encoder(2, 9);
-TM1638lite tm(4, 7, 8);
 int counter = 0;
 const byte interruptPin = 3;
 
@@ -21,7 +29,6 @@ unsigned long now = 0;
 void setup() {
   pinMode(interruptPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(interruptPin), changeMode, HIGH);
-  tm.reset();
   ws2812fx.init();
   ws2812fx.setBrightness(255);
   ws2812fx.setSpeed(700);
@@ -38,9 +45,9 @@ void loop() {
     counter /= 2;
 
   if(counter >= 0) {
-    tm.displayText(String(counter));
+    myLed.println(String(counter));
   }else{
-    tm.displayText("Auto");
+    myLed.println("Auto");
     counter = -1;
     encoder.write(-1);
     if(now - last_change > TIMER_MS) {
