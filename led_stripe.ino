@@ -20,6 +20,7 @@ LedPrint myLed = LedPrint
 WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 Encoder encoder(2, 9);
 int counter = 0;
+int oldCounter = counter;
 const byte interruptPin = 3;
 
 unsigned long last_change = 0;
@@ -27,6 +28,7 @@ unsigned long now = 0;
 
 
 void setup() {
+  myLed.setIntensity(15);
   pinMode(interruptPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(interruptPin), changeMode, HIGH);
   ws2812fx.init();
@@ -35,6 +37,8 @@ void setup() {
   ws2812fx.setColor(0x8bff84);
   ws2812fx.setMode(FX_MODE_STATIC);
   ws2812fx.start();
+  counter = -1;
+  myLed.println("--Auto--");
 }
 
 void loop() {
@@ -45,9 +49,15 @@ void loop() {
     counter /= 2;
 
   if(counter >= 0) {
-    myLed.println(String(counter));
+    if(oldCounter!=counter) {
+      myLed.println(String(counter));
+      oldCounter = counter;    
+    }
   }else{
-    myLed.println("Auto");
+    if(oldCounter!=counter) {
+      myLed.println("Auto");
+      oldCounter = counter;    
+    }
     counter = -1;
     encoder.write(-1);
     if(now - last_change > TIMER_MS) {
