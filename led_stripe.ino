@@ -1,6 +1,6 @@
 #include <Encoder.h>
 #include <WS2812FX.h>
-#include "LedPrint.h"
+#include <SevenSegmentTM1637.h>
 
 
 #define LED_COUNT 288
@@ -8,15 +8,8 @@
 
 #define TIMER_MS 60000
 
-LedPrint myLed = LedPrint
-      (
-        4, // DATA PIN
-        8, // CLOCK PIN
-        7, // CS PIN
-        8,  // NUMBER OF DIGITS
-        1   // Orientation 0/1, if it looks backwards try the other
-      );
-    
+SevenSegmentTM1637 display(8, 4);
+
 WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 Encoder encoder(2, 9);
 int counter = 0;
@@ -28,7 +21,8 @@ unsigned long now = 0;
 
 
 void setup() {
-  myLed.setIntensity(15);
+  display.begin();
+  display.setBacklight(100);
   pinMode(interruptPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(interruptPin), changeMode, HIGH);
   ws2812fx.init();
@@ -38,7 +32,7 @@ void setup() {
   ws2812fx.setMode(FX_MODE_STATIC);
   ws2812fx.start();
   counter = -1;
-  myLed.println("--Auto--");
+  display.print("Auto");
 }
 
 void loop() {
@@ -50,12 +44,12 @@ void loop() {
 
   if(counter >= 0) {
     if(oldCounter!=counter) {
-      myLed.println(String(counter));
+      display.print(String(counter));
       oldCounter = counter;    
     }
   }else{
     if(oldCounter!=counter) {
-      myLed.println("Auto");
+      display.print("Auto");
       oldCounter = counter;    
     }
     counter = -1;
